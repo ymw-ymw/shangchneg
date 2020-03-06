@@ -16,4 +16,5 @@ export default {
 <style>
  @import "assets/css/gloab.css";
  @import "assets/font/iconfont.css";
+ @import "assets/fonts/iconfont.css";
 </style>

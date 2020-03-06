@@ -38,7 +38,7 @@
 					loginpasword: '',
 					token: ''
 				},
-				loginrules: {
+				loginrules:{
 					loginname: [{
 							required: true,
 							message: '请输入登录名称',

@@ -1,4 +1,4 @@
-import request from './index.js'
+import request from './request.js'
 export function postlogin(username,password) {
   return request({
     url: '/login',
@@ -8,3 +8,4 @@ export function postlogin(username,password) {
 		}
   })
 }
+
