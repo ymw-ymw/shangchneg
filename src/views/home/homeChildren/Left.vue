@@ -52,7 +52,6 @@
 				this.topstatus = !this.topstatus;
 			},
 			activepath(activepath) {
-
 				console.log(activepath)
 				window.sessionStorage.setItem('activepath', activepath)
 				this.activepaths = activepath

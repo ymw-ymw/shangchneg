@@ -11,10 +11,12 @@
 		<el-card>
 			<el-row :gutter="20">
 				<el-col :span='7'>
+					<!-- 搜索框区域 -->
 					<el-input placeholder="请输入内容" v-model="queryInfo.query" clearable @clear="GetUserLists">
 						<el-button slot="append" icon="el-icon-search" @click="GetUserLists"></el-button>
 					</el-input>
 				</el-col>
+					
 				<el-col :span='4'>
 					<el-button type="primary" @click="adduser =true">添加用户</el-button>
 				</el-col>
@@ -35,6 +37,8 @@
 				</el-table-column>
 				<el-table-column prop="role_name" label="角色">
 				</el-table-column>
+				
+				<!-- 状态区域 -->
 				<el-table-column label="状态">
 					<template slot-scope="scope">
 						<el-switch v-model="scope.row.mg_state" @change="userStateChanged(scope.row)" active-color="#13ce66"
@@ -42,23 +46,47 @@
 						</el-switch>
 					</template>
 				</el-table-column>
-									
+					<!-- 操作区域 -->				
 				<el-table-column prop="role_name" label="操作">
 					<template slot-scope="scope">
 						<el-button type="primary" content="修改用户" icon="el-icon-edit" size="mini" @click="showupdate(scope.row.id)"></el-button>
 						<el-button type="danger" content="删除用户" icon="el-icon-delete" size="mini" @click="showdeleteUser(scope.row.id)"></el-button>
-						<el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
-							<el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+						<el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false" @close="guanbi">
+							<el-button type="warning" icon="el-icon-setting" size="mini" @click="isshowaddUserinfo(scope.row)"></el-button>
 						</el-tooltip>
 					</template>
 				</el-table-column>
 			</el-table>
 			
 			<!-- 修改用户操作 -->
-			<up-data :update="update" :isupdata="isupdata" @isupdatacheng="isupdatacheng"></up-data>
+			<up-data :update="update" :isupdata="isupdata" @isupdatacheng="isupdatacheng(scope.row)"></up-data>
+			
+			<!-- 分配角色区域 -->
+			<el-dialog
+			  title="提示"
+			  :visible.sync="isaddUserinfo"
+			  width="50%">
+			  <div>
+					<p>当前的用户： {{userInfos.username}}</p>
+					<p>当前的角色： {{userInfos.role_name}}</p>					
+					<p>
+						 <el-select v-model="showRoles"  placeholder="请选择权限">
+					    <el-option
+					      v-for="item in showRolesList"
+					      :key="item.id"
+					      :label="item.roleName"
+					      :value="item.id">
+					    </el-option>
+					 </el-select></p>				
+				</div>
+			  <span slot="footer" class="dialog-footer">
+			    <el-button @click="isaddUserinfo = false">取 消</el-button>
+			    <el-button type="primary" @click="ServeRolesInfo">确 定</el-button>
+			  </span>
+			</el-dialog>
 			
 			
-			
+					
 			<!-- 分页区域 -->
 			<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="queryInfo.pagenum"
 			 :page-sizes="[1, 2, 5, 10]" :page-size="queryInfo.pagesize" layout="total, sizes, prev, pager, next, jumper" :total="total">
@@ -84,7 +112,16 @@
 				UserList: [],
 				adduser: false,
 				update: {},
-				isupdata: false
+				isupdata: false,
+							
+				/*分配用户角色权限的变量 */
+				isaddUserinfo:false,
+				//当前被分配角色的信息
+				userInfos:[],
+				//展示获取的数据
+				showRolesList:[],
+				//存储获得分配的角色
+				showRoles:''
 			}
 		},
 		components: {
@@ -97,9 +134,46 @@
 			this.GetUserLists()
 		},
 		methods: {
-			//监听用户删除的操作
+							
+			//监听添加用户的操作
+			chengaddUser() {
+				this.adduser = false
+				this.GetUserLists()
+			},
+			
+			/* 分页区域函数方法 */
+			handleSizeChange(size) {
+				//监听显示数据改变
+				this.queryInfo.pagesize = size;
+				this.GetUserLists()
+			},
+			handleCurrentChange(page) {
+				//监听页码改变
+				this.queryInfo.pagenum = page;
+				this.GetUserLists()
+			},
+			
+			
+			/* 用户更新的方法 */			
+			showupdate(id) {
+				//监听修改用户的操作				
+				this.isupdata = true;
+				this.$http.get('users/' + id).then(res =>{
+					this.update = res.data.data					
+				}).catch(err =>{
+					console.log("更改用户信息失败")
+				})
+			},			
+			isupdatacheng(){
+				//监听用户更新isupdata值的改变
+				this.isupdata = false;
+				this.GetUserLists()
+			},
+			
+						
+			/* 用户删除操作区域  */		 			
 			showdeleteUser(id) {
-					console.log(id)
+					//监听用户删除的操作
 					this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
 					  confirmButtonText: '确定',
 					  cancelButtonText: '取消',
@@ -112,40 +186,40 @@
 						this.GetUserLists()
 					})
 			},
-						
-			//监听修改用户的操作
-			showupdate(id) {
-				console.log(id)
-				this.isupdata = true;
-				this.$http.get('users/' + id).then(res =>{
-					this.update = res.data.data
-					console.log(res)
+			
+									 
+			/*分配用户角色权限的方法  */			
+			ServeRolesInfo(){
+				//像服务器发送请求，保存用户分配
+				if(!this.showRoles){
+					return console.log('请选择要分配的角色')
+				}			
+				this.$http.put(`users/${this.userInfos.id}/role`,{rid: this.showRoles}).then(res =>{
+				this.isaddUserinfo = false
+				this.GetUserLists()
 				}).catch(err =>{
-					console.log("更改用户信息失败")
+					console.log(err)
+				})
+			},		
+			isshowaddUserinfo(userInfo) {
+				//监听用户权限分配对话框的显示
+				this.userInfos = userInfo
+				this.isaddUserinfo = true
+				this.$http.get('roles').then(res =>{
+					this.showRolesList = res.data.data
+				}).catch(err =>{
+					console.log(err)
 				})
 			},
-			//监听用户更新isupdata值的改变
-			isupdatacheng(){
-				this.isupdata = false;
-				this.GetUserLists()
+			//监听用户关闭，清空数据
+			guanbi() {
+				this.userInfos = ''				
+				this.showRoles =''
 			},
 			
-			//监听添加用户的操作
-			chengaddUser() {
-				this.adduser = false
-				this.GetUserLists()
-			},
-			//监听显示数据改变
-			handleSizeChange(size) {
-				this.queryInfo.pagesize = size;
-				this.GetUserLists()
-			},
-			//监听页码改变
-			handleCurrentChange(page) {
-				this.queryInfo.pagenum = page;
-				this.GetUserLists()
-			},
-			//发送请求数据
+			
+			
+			/* 发送请求数据区域 */
 			GetUserLists() {
 				this.$http.get('users', {
 					params: this.queryInfo
@@ -156,8 +230,8 @@
 					console.log('获取用户列表失败')
 				})
 			},
-			//用户状态修改请求
 			userStateChanged(info) {
+				//用户状态修改请求
 				this.$http.put(`users/${info.id}/state/${info.mg_state}`).catch(err => {
 					info.mg_state = !info.mg_state
 					console.log('用户修改失败')
