@@ -7,6 +7,10 @@ const Welcome = () => import('views/home/homeChildren/Welcome')
 const User = () => import('views/home/homeChildren/User')
 const Power = () => import('views/power/Power')
 const Roles = () => import('views/power/Roles')
+const CateGories = () => import('views/goodslist/CateGories')
+const Params =() => import('views/goodslist/Params')
+const Goods = () => import('views/goodslist/Goods')
+const GoodsAdd = () => import('views/goodslist/add') 
 Vue.use(VueRouter);
 
 
@@ -37,6 +41,22 @@ const routes = [{
 			{
 				path: '/roles',
 				component: Roles
+			},
+			{
+				path: '/categories',
+				component: CateGories
+			},
+			{
+				path: '/params',
+				component: Params
+			},
+			{
+				path: '/goods',
+				component: Goods
+			},
+			{
+				path: '/goods/add',
+				component: GoodsAdd
 			}
 		]
 	}

@@ -22,10 +22,7 @@
 				</el-table-column>				
 			</el-table>
 		</el-card>
-	</div>
-	
-	
-	
+	</div>	
 </template>
 
 <script>

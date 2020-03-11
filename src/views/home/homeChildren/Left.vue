@@ -59,7 +59,6 @@
 			GetLeftList() {
 				GetLeft().then(res => {
 					this.menus.push(...res.data)
-					console.log(this.menus)
 				}).catch(err => {
 					console.log(err)
 				})
