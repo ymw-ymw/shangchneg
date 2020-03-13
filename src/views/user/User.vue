@@ -59,7 +59,21 @@
 			</el-table>
 			
 			<!-- 修改用户操作 -->
-			<up-data :update="update" :isupdata="isupdata" @isupdatacheng="isupdatacheng(scope.row)"></up-data>
+				<el-dialog title="修改用户" :visible.sync="isupdata" @close="adduserclear">
+					<el-form :model="update" :rules="UpdataRules" ref="UpdataRef" label-width="70px">
+					  <el-form-item label="用户名">
+					    <el-input v-model="update.username" disabled></el-input>
+					  </el-form-item>
+						<el-form-item label="邮箱" prop="email">
+						  <el-input v-model="update.email"></el-input>
+						</el-form-item>
+						<el-form-item label="手机" prop="mobile">
+						  <el-input v-model="update.mobile"></el-input>
+						</el-form-item>
+					</el-form>
+					<el-button @click="isupdata = false">取 消</el-button>
+					<el-button type="primary" @click="UpdataInfo">确 定</el-button>
+				</el-dialog>
 			
 			<!-- 分配角色区域 -->
 			<el-dialog
@@ -97,8 +111,8 @@
 </template>
 
 <script>
-	import AddUserFrom from './AddFrom.vue'
-	import UpData from './Update.vue'
+	import AddUserFrom from './userchildren/AddFrom.vue'
+	import { UpdataRules } from 'common/Rules.js'
 	export default {
 		name: 'User',
 		data() {
@@ -121,13 +135,18 @@
 				//展示获取的数据
 				showRolesList:[],
 				//存储获得分配的角色
-				showRoles:''
+				showRoles:'',
+				addForm: {
+					username: '',
+					password: '',
+					email: '',
+					mobile: ''
+				},
+				UpdataRules: UpdataRules
 			}
 		},
 		components: {
-			AddUserFrom,
-			UpData,
-			
+			AddUserFrom,			
 		},
 		//页面创建，第一次请求数据
 		created() {
@@ -159,31 +178,45 @@
 				//监听修改用户的操作				
 				this.isupdata = true;
 				this.$http.get('users/' + id).then(res =>{
+					console.log(res.data.data)
 					this.update = res.data.data					
 				}).catch(err =>{
 					console.log("更改用户信息失败")
 				})
-			},			
-			isupdatacheng(){
-				//监听用户更新isupdata值的改变
-				this.isupdata = false;
-				this.GetUserLists()
+			},		
+			//向服务器发送更改请求
+			UpdataInfo(){
+				this.$refs.UpdataRef.validate().then(res => {
+					return this.$http.put('users/' + this.update.id,{ email:this.update.email, mobile:this.update.mobile})
+				}).then(res => {						
+					console.log(res)
+					this.GetUserLists()
+					this.isupdata = false;
+				}).catch(err =>{
+					console.log(err)
+				})
 			},
+			//监听更改的关闭
+			adduserclear(){				
+				this.$refs.UpdataRef.resetFields()
+			},
+			
 			
 						
 			/* 用户删除操作区域  */		 			
-			showdeleteUser(id) {
+			 showdeleteUser(id) {
 					//监听用户删除的操作
-					this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+					this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
 					  confirmButtonText: '确定',
 					  cancelButtonText: '取消',
-					  type: 'warning'
+					  type: 'warning',					
 					}).then(res =>{
-						return this.$http.delete('users/' + id);			
-					}).catch(err =>{
-						return
-					}).then(res =>{
+						return this.$http.delete( `roles/${id}` );			
+					}).then(res =>{							
 						this.GetUserLists()
+						this.$message.error('删除成功！')
+					}).catch(err =>{
+						console.log(err)
 					})
 			},
 			

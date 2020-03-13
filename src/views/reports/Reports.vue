@@ -63,10 +63,7 @@
 				const result = _.merge(res.data.data, this.options)
 				// 5. 展示数据
 				myChart.setOption(result)
-			})
-			
-			
-			
+			})		
 		}
 	}
 </script>

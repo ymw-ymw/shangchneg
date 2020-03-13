@@ -53,6 +53,21 @@
 		</el-card>
 		
 		
+		<!-- 更新商品区域 -->
+		<el-dialog title="添加分类" :visible.sync="isshowcategoriesList" width="50%" @close="categoriesListclose">
+		 <!-- 添加分类的表单 -->
+		 <el-form :model="updataList" :rules="addCateFormRules" ref="addCateFormRef" label-width="100px">
+		   <el-form-item label="分类名称：" prop="cat_name">
+		     <el-input v-model="updataList.cat_name"></el-input>
+		   </el-form-item>
+		   
+		 </el-form>		 
+		  <span slot="footer">
+		    <el-button @click="isshowcategoriesList = false">取 消</el-button>
+		    <el-button type="primary" @click="updataCategoriesList" >确 定</el-button>
+		  </span>
+		</el-dialog>
+		
 		<!-- 添加商品区域 -->
 		<el-dialog title="添加分类" :visible.sync="addCateDialogVisible" width="50%" @close="addCateDialogClosed">
 		 <!-- 添加分类的表单 -->
@@ -71,9 +86,7 @@
 				  clearable change-on-select>
 		     </el-cascader>
 		   </el-form-item>
-		 </el-form>
-		 
-		 
+		 </el-form>		 
 		  <span slot="footer">
 		    <el-button @click="addCateDialogVisible = false">取 消</el-button>
 		    <el-button type="primary" @click="addCart" >确 定</el-button>
@@ -150,7 +163,10 @@
 				},
 				//选中的父级id数据
 				selectedKeys:[],
-				deCart:''
+				deCart:'',
+				updataList:[],
+				isshowcategoriesList:false,
+				cardId: 0
 			}
 		},
 		components:{
@@ -161,6 +177,35 @@
 		},
 		methods:{
 			
+			//监听对话框关闭事件
+			categoriesListclose(){
+				
+			},
+			/* 编辑商品区域 */
+			updateCart(id){
+				console.log(id)
+				this.$http.get(`categories/${id}`).then(res =>{
+					console.log(res)
+					this.cardId = id
+					this.updataList = res.data.data
+					this.isshowcategoriesList = true
+				}).catch(err =>{
+					console.log(err)
+				})
+				
+			},
+			//监听用户更新确定
+			updataCategoriesList(){
+				this.$http.put(`categories/${this.cardId}`,{cat_name:this.updataList.cat_name}).then(res =>{
+					console.log(res)
+					this.GetGoodList()
+					this.isshowcategoriesList = false
+				}).catch(err =>{
+					console.log(err)
+				})
+			},
+			
+	
 			/* 分页区域 */
 			handleSizeChange(newsize){
 				//监听最新的页码
@@ -225,24 +270,19 @@
 			DeleteCartList(id){
 					//监听用户删除的操作
 					console.log(id)
-					this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+					this.$confirm('此操作将永久删除该分类, 是否继续?', '提示', {
 					  confirmButtonText: '确定',
 					  cancelButtonText: '取消',
 					  type: 'warning'
 					}).then(res =>{
 						return this.$http.delete('categories/' + id);			
-					}).catch(err =>{
-						return
 					}).then(res =>{
 						this.GetGoodList()
+						return this.$message.error('删除成功！')
 					})
 			},
 			
-			/* 编辑商品区域 */
-			updateCart(id){
-				console.log(id)
-				
-			},
+			
 			
 			
 			

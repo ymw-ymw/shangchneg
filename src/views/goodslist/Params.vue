@@ -282,9 +282,8 @@
 				}).catch(err => {
 					return
 				}).then(res => {
-					console.log(res)
-					console.log('删除成功')
 					this.GetParamsCartList()
+					return this.$message.error('删除成功！')
 				})
 			},
 

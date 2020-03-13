@@ -40,7 +40,11 @@
               <el-input v-model="addForm.goods_number" type="number"></el-input>
             </el-form-item>						
             <el-form-item label="商品分类" prop="goods_cat">
-              <el-cascader expand-trigger="hover" :options="catelist" :props="cateProps" v-model="addForm.goods_cat" @change="handleChange">
+              <el-cascader expand-trigger="hover" 
+							:options="catelist" 
+							:props="cateProps" 
+							v-model="addForm.goods_cat"
+							 @change="handleChange">
               </el-cascader>
             </el-form-item>
           </el-tab-pane>
@@ -247,10 +251,7 @@ export default {
         if (!valid) {
           return this.$message.error('请填写必要的表单项！')
         }
-        // 执行添加的业务逻辑
-        // lodash   cloneDeep(obj)
-        const form = _.cloneDeep(this.addForm)
-        form.goods_cat = form.goods_cat.join(',')
+        
         // 处理动态参数
         this.manyTableData.forEach(item => {
           const newInfo = {
@@ -274,7 +275,6 @@ export default {
         if (res.meta.status !== 201) {
           return this.$message.error('添加商品失败！')
         }
-
         this.$message.success('添加商品成功！')
         this.$router.push('/goods')
       })

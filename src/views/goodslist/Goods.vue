@@ -33,14 +33,20 @@
 		    </el-table-column>
 		    <el-table-column label="操作" width="130px">
 		      <template slot-scope="scope">
-		        <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
+		        <el-button type="primary" icon="el-icon-edit" size="mini" @click="goUpdatapage(scope.row.goods_id)"></el-button>
 		        <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeById(scope.row.goods_id)"></el-button>
 		      </template>
 		    </el-table-column>
 		  </el-table>
 		
 		  <!-- 分页区域 -->
-		  <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="queryInfo.pagenum" :page-sizes="[5, 10, 15, 20]" :page-size="queryInfo.pagesize" layout="total, sizes, prev, pager, next, jumper" :total="total" background>
+		  <el-pagination @size-change="handleSizeChange" 
+			@current-change="handleCurrentChange" 
+			:current-page="queryInfo.pagenum" 
+			:page-sizes="[5, 10, 15, 20]" 
+			:page-size="queryInfo.pagesize" 
+			layout="total, sizes, prev, pager, next, jumper" 
+			:total="total" background>
 		  </el-pagination>
 		</el-card>
 		
@@ -48,7 +54,6 @@
 </template>
 
 <script>
-	import getformat from './Time.js'
 	export default{
 		name: 'Goods',
 		data(){
@@ -77,6 +82,10 @@
 			goAddpage(){
 				this.$router.push('/goods/add')
 			},
+			//跳转到更新路由
+			goUpdatapage(id){
+				this.$router.push({path:'./goods/updata', query:{id:id}})
+			},
 			
 			
 			
@@ -92,8 +101,7 @@
 					return this.$http.delete(`goods/${id}`)	
 				}).then(res =>{			
 					this.getGoodsList()
-					console.log(res)
-					console.log('删除成功')
+					return this.$message.error('删除成功！')
 				})
 			},
 			
@@ -113,6 +121,7 @@
 				this.$http.get('goods',{params: this.queryInfo}).then(res =>{
 					console.log(res.data.data.goods)
 					this.goodslist = res.data.data.goods
+					this.total = res.data.data.total
 				}).catch(err =>{
 					console.log(err)
 				})

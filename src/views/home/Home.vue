@@ -36,8 +36,6 @@
 		},
 		methods:{
 			isleftzhnakai(data) {
-				console.log(data)
-				console.log('aaaa')
 				this.topstatus = data
 			}
 		}
